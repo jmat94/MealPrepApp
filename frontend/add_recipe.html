@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meal Prep Engine - Add Recipe</title>
+    <style>
+        :root {
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --primary: #2563eb;
+            --secondary: #10b981;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 40px 20px;
+        }
+        .card {
+            background: var(--card-bg);
+            max-width: 650px;
+            margin: 0 auto 24px auto;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        h2, h3 { margin-top: 0; }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+        input[type="text"], input[type="number"], textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 15px;
+            box-sizing: border-box;
+        }
+        textarea { resize: vertical; }
+        
+        /* Dynamic Ingredient Row Grid Layout */
+        .ing-heading-grid {
+            display: grid;
+            grid-template-columns: 2fr 1.2fr 1fr 1fr 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 6px;
+            font-size: 12px;
+            font-weight: bold;
+            color: #64748b;
+            padding: 0 8px;
+        }
+        .ing-row {
+            display: grid;
+            grid-template-columns: 2fr 1.2fr 1fr 1fr 1fr 1fr;
+            gap: 8px;
+            background: #f8fafc;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 10px;
+        }
+        .ing-row input {
+            padding: 6px 8px;
+            font-size: 14px;
+        }
+        
+        .btn {
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: 600;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .btn-primary { background-color: var(--primary); }
+        .btn-primary:hover { background-color: #1d4ed8; }
+        .btn-secondary { 
+            background-color: var(--secondary); 
+            margin-bottom: 20px;
+        }
+        .btn-secondary:hover { background-color: #059669; }
+        
+        .nav-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .nav-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+<div class="card" style="box-shadow: none; background: transparent; padding: 0;">
+    <a href="index.html" class="nav-link">← Back to Recipe Scaler</a>
+</div>
+
+<div class="card">
+    <h2>Create New Recipe Template</h2>
+    
+    <div class="form-group">
+        <label for="title">Recipe Title</label>
+        <input type="text" id="title" placeholder="e.g., Honey Garlic Salmon Glaze">
+    </div>
+    
+    <div class="form-group">
+        <label for="instructions">Cooking Instructions</label>
+        <textarea id="instructions" rows="3" placeholder="e.g., Season salmon. Pan sear for 4 mins. Add glaze..."></textarea>
+    </div>
+    
+    <div class="form-group" style="max-width: 150px;">
+        <label for="base_servings">Base Servings</label>
+        <input type="number" id="base_servings" value="2" min="1">
+    </div>
+
+    <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 30px 0;">
+
+    <h3>Ingredients Profile Mapping</h3>
+    <p style="font-size: 13px; color: #64748b; margin-top: -10px; margin-bottom: 20px;">
+        Provide the target recipe weight, alongside its global macro profile definitions evaluated <strong>per 100g baseline</strong>.
+    </p>
+    
+    <div class="ing-heading-grid">
+        <div>Ingredient Name</div>
+        <div>Recipe Wt(g)</div>
+        <div>Cals</div>
+        <div>Prot(g)</div>
+        <div>Carb(g)</div>
+        <div>Fat(g)</div>
+    </div>
+
+    <div id="ingredient-container">
+        <div class="ing-row">
+            <input type="text" placeholder="Salmon" class="ing-name" required>
+            <input type="number" placeholder="300" class="ing-weight" step="0.1" required>
+            <input type="number" placeholder="208" class="ing-cals" step="0.1" required>
+            <input type="number" placeholder="20" class="ing-protein" step="0.1" required>
+            <input type="number" placeholder="0" class="ing-carbs" step="0.1" required>
+            <input type="number" placeholder="13" class="ing-fat" step="0.1" required>
+        </div>
+    </div>
+    
+    <button type="button" class="btn btn-secondary" onclick="addIngredientRow()">+ Add Another Ingredient</button>
+    <button type="button" class="btn btn-primary" onclick="submitRecipePipeline()">Save Recipe to Core Database</button>
+</div>
+
+<script>
+    // Appends a fresh cloning row structure to the interface form container
+    function addIngredientRow() {
+        const container = document.getElementById('ingredient-container');
+        const standardRow = document.querySelector('.ing-row').cloneNode(true);
+        
+        // Wipe values inside the newly cloned row elements
+        standardRow.querySelectorAll('input').forEach(input => input.value = '');
+        container.appendChild(standardRow);
+    }
+
+    // Extracts UI state arrays, bundles them into JSON, and targets the FastAPI pipeline
+    async function submitRecipePipeline() {
+        const ingredientsArray = [];
+        const rows = document.querySelectorAll('.ing-row');
+        
+        // 1. Loop map form components directly into Pydantic-ready structure blocks
+        for (let row of rows) {
+            const name = row.querySelector('.ing-name').value.trim();
+            const weight = parseFloat(row.querySelector('.ing-weight').value);
+            const cals = parseFloat(row.querySelector('.ing-cals').value);
+            const pro = parseFloat(row.querySelector('.ing-protein').value);
+            const carb = parseFloat(row.querySelector('.ing-carbs').value);
+            const fat = parseFloat(row.querySelector('.ing-fat').value);
+
+            // Simple validation guard barrier
+            if (!name || isNaN(weight) || isNaN(cals) || isNaN(pro) || isNaN(carb) || isNaN(fat)) {
+                alert("Please fill out all ingredient inputs with valid data metrics.");
+                return;
+            }
+
+            ingredientsArray.push({
+                name: name,
+                weight_in_grams: weight,
+                calories: cals,
+                protein: pro,
+                carbs: carb,
+                fat: fat
+            });
+        }
+
+        // 2. Assemble Unified API Payload JSON Structure Contract
+        const payload = {
+            title: document.getElementById('title').value.trim(),
+            instructions: document.getElementById('instructions').value.trim(),
+            base_servings: parseInt(document.getElementById('base_servings').value),
+            ingredients: ingredientsArray,
+            is_premium_only: false
+        };
+
+        if (!payload.title || !payload.instructions || isNaN(payload.base_servings)) {
+            alert("Please complete the primary core recipe meta data fields.");
+            return;
+        }
+
+        try {
+            // 3. Fire payload at our active FastAPI port address
+            const response = await fetch('/recipes/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const errDetail = await response.json();
+                throw new Error(errDetail.detail || "Pipeline extraction breakdown.");
+            }
+
+            const result = await response.json();
+            alert(`Success! Recipe persisted into database engine.\nGenerated ID: ${result.recipe_id}`);
+            
+            // Clear out elements on structural success
+            document.getElementById('title').value = '';
+            document.getElementById('instructions').value = '';
+            document.querySelectorAll('.ing-row').forEach((row, idx) => {
+                if (idx === 0) {
+                    row.querySelectorAll('input').forEach(i => i.value = '');
+                } else {
+                    row.remove(); // Drop optional excess rows
+                }
+            });
+
+        } catch (error) {
+            console.error("Pipeline Transmission Error:", error);
+            alert(`Failed to save record: ${error.message}`);
+        }
+    }
+</script>
+</body>
+</html>

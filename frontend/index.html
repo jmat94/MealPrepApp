@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meal Prep Data Engine UI</title>
+    <style>
+        :root {
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --primary: #2563eb;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 24px;
+        }
+        h1, h2 { margin-top: 0; }
+        .form-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+        input[type="number"] {
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+            width: 80px;
+        }
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        button:hover { background-color: #1d4ed8; }
+        .macro-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-top: 16px;
+            text-align: center;
+        }
+        .macro-box {
+            background: #f8fafc;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        .macro-val { font-size: 18px; font-weight: bold; color: var(--primary); }
+        .macro-label { font-size: 12px; color: #64748b; margin-top: 4px; }
+        ul { padding-left: 20px; margin: 16px 0 0 0; }
+        li { margin-bottom: 8px; font-size: 16px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="card">
+        <h1 id="recipe-title">Loading Recipe...</h1>
+        <p id="recipe-instructions" style="color: #64748b; font-style: italic;"></p>
+        
+        <div class="form-group">
+            <label style="line-height: 38px; font-weight: 500;">Target Servings:</label>
+            <input type="number" id="servings-input" value="4" min="1">
+            <button onclick="fetchScaledRecipe()">Scale Meal Prep</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Total Target Nutrition</h2>
+        <div class="macro-grid">
+            <div class="macro-box"><div class="macro-val" id="macro-cal">-</div><div class="macro-label">Calories</div></div>
+            <div class="macro-box"><div class="macro-val" id="macro-pro">-</div><div class="macro-label">Protein</div></div>
+            <div class="macro-box"><div class="macro-val" id="macro-carb">-</div><div class="macro-label">Carbs</div></div>
+            <div class="macro-box"><div class="macro-val" id="macro-fat">-</div><div class="macro-label">Fats</div></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Scaled Grocery Requirements</h2>
+        <ul id="ingredients-list">
+            </ul>
+    </div>
+</div>
+
+<script>
+    const RECIPE_ID = "rec-0000-0000-0000-000000000001";
+
+    async function fetchScaledRecipe() {
+        const servings = document.getElementById('servings-input').value;
+        const url = `/recipe/${RECIPE_ID}?servings=${servings}`;
+        try {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error("API Engine pipeline connection failure.");
+            const data = await response.json();
+
+            // 1. Update text metadata descriptors
+            document.getElementById('recipe-title').innerText = data.title;
+            document.getElementById('recipe-instructions').innerText = `Instructions: ${data.instructions}`;
+
+            // 2. Render dynamic calculated macro data fields
+            document.getElementById('macro-cal').innerText = `${data.total_nutrition_summary.calories_kcal} kcal`;
+            document.getElementById('macro-pro').innerText = `${data.total_nutrition_summary.protein_g}g`;
+            document.getElementById('macro-carb').innerText = `${data.total_nutrition_summary.carbs_g}g`;
+            document.getElementById('macro-fat').innerText = `${data.total_nutrition_summary.fat_g}g`;
+
+            // 3. Clear and loop-render scaled grocery array metrics
+            const listContainer = document.getElementById('ingredients-list');
+            listContainer.innerHTML = ""; // Reset internal HTML map string
+            
+            data.ingredients.forEach(item => {
+                const li = document.createElement('li');
+                li.innerHTML = `<strong>${item.scaled_weight_g}${item.unit}</strong> of ${item.name}`;
+                listContainer.appendChild(li);
+            });
+
+        } catch (error) {
+            console.error("Frontend View Rendering Error:", error);
+            alert("Could not pull data from the active Python backend engine. Ensure Uvicorn is running!");
+        }
+    }
+
+    // Run once on browser window mounting initialization to display data right away
+    window.onload = fetchScaledRecipe;
+</script>
+</body>
+</html>
