@@ -140,7 +140,7 @@ def get_scaled_recipe(recipe_id: str, servings: int = Query(default=2, ge=1)):
     if not recipe:
         conn.close()
         raise HTTPException(status_code=404, detail="Recipe not found.")
-        
+    
     base_servings = recipe["base_servings"]
     scale_factor = servings / base_servings
     
@@ -179,7 +179,7 @@ def get_scaled_recipe(recipe_id: str, servings: int = Query(default=2, ge=1)):
         
         ingredients_list.append({
             "name": row["name"],
-            "scaled_weight_g": round(scaled_weight, 1),
+            "scaled_weight_grams": round(scaled_weight, 1),
             "unit": row["display_unit"]
         })
         

@@ -214,7 +214,7 @@
 
         try {
             // 3. Fire payload at our active FastAPI port address
-            const response = await fetch('/recipes/create', {
+            const response = await fetch('http://127.0.0.1:8000/recipes/create', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
