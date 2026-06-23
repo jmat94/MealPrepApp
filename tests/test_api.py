@@ -1,30 +1,37 @@
 import pytest
 from fastapi.testclient import TestClient
 from src.api import app
-from src.database import engine, Base
+from src.database.db_manager import init_db, get_db_connection
 
 client = TestClient(app)
 
 @pytest.fixture(scope="session", autouse=True)
 def setup_database():
     """
-    Automated fixture that runs once before all tests.
-    It builds the tables dynamically and seeds the required data.
+    Automated fixture that runs once before tests boot up.
+    It builds the raw SQLite tables using your schema.sql script.
     """
-
-    Base.metadata.create_all(bind=engine)
-    with engine.connect() as connection:
-        connection.execute(
-            "INSERT OR IGNORE INTO recipes (id, title, servings) VALUES ('rec-0000-0000-0000-000000000001', 'Beef & Sweet Potato Mash', 4)"
-        )
-        connection.execute(
-            "INSERT OR IGNORE INTO ingredients (recipe_id, name, scaled_weight_g) VALUES ('rec-0000-0000-0000-000000000001', 'Sweet Potato', 600.0)"
-        )
-
-    yield
-
-    Base.metadata.drop_all(bind=engine)
-
+    # 1. Trigger your native table building logic
+    init_db()
+    
+    # 2. Inject the seed data your test specifically expects
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # Adjust column names if your schema.sql uses different field names!
+    cursor.execute(
+        "INSERT OR IGNORE INTO recipes (id, title, servings) VALUES (?, ?, ?)",
+        ('rec-0000-0000-0000-000000000001', 'Beef & Sweet Potato Mash', 4)
+    )
+    cursor.execute(
+        "INSERT OR IGNORE INTO ingredients (recipe_id, name, scaled_weight_g) VALUES (?, ?, ?)",
+        ('rec-0000-0000-0000-000000000001', 'Sweet Potato', 600.0)
+    )
+    
+    conn.commit()
+    conn.close()
+    
+    yield # Execution hand-off to your actual tests below
 
 
 def test_read_homepage():
