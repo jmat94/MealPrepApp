@@ -1,3 +1,4 @@
+import pytest
 from fastapi.testclient import TestClient
 from src.api import app
 from src.database import engine, Base
