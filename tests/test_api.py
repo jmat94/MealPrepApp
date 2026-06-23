@@ -1,9 +1,5 @@
-import pytest
 from fastapi.testclient import TestClient
 from src.api import app
-
-# Force SQLite to use RAM during testing instead of a local file path
-DATABASE_URL = "sqlite:///:memory:"
 
 client = TestClient(app)
 

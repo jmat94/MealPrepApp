@@ -30,10 +30,20 @@ jobs:
                     flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
                     flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
-            - name: Run Test Suite Execution Matrix
+            - name: Create Database Directory Structure
               run: |
-                # Force Python to recognize our root folder structure and run tests
+                mkdir -p src/data
+                mkdir -p data
+                mkdir -p instance
+
+            - name: Run Test Suite Execution Matrix
+              env: 
+                DATABASE_URL: sqlite:///${{ github.workspace }}/src/data/test.db
+                SQLITE_DB_PATH: ${{ github.workspace }}/src/data/test.db
+              run: |
+                # Force Python to recognize the root folder structure and run tests
                 PYTHONPATH=. pytest
+
 
     deploy:
         needs: build-and-test
