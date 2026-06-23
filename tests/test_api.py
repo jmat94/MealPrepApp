@@ -20,11 +20,11 @@ def setup_database():
     
     # Adjust column names if your schema.sql uses different field names!
     cursor.execute(
-        "INSERT OR IGNORE INTO recipes (id, title, servings) VALUES (?, ?, ?)",
+        "INSERT OR IGNORE INTO recipes (recipe_id, title, servings) VALUES (?, ?, ?)",
         ('rec-0000-0000-0000-000000000001', 'Beef & Sweet Potato Mash', 4)
     )
     cursor.execute(
-        "INSERT OR IGNORE INTO ingredients (recipe_id, name, scaled_weight_g) VALUES (?, ?, ?)",
+        "INSERT OR IGNORE INTO ingredients (ingredient_id, name, scaled_weight_g) VALUES (?, ?, ?)",
         ('rec-0000-0000-0000-000000000001', 'Sweet Potato', 600.0)
     )
     
