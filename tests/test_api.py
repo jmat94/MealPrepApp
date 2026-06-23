@@ -1,7 +1,30 @@
 from fastapi.testclient import TestClient
 from src.api import app
+from src.database import engine, Base
 
 client = TestClient(app)
+
+@pytest.fixture(scope="session", autouse=True)
+def setup_database():
+    """
+    Automated fixture that runs once before all tests.
+    It builds the tables dynamically and seeds the required data.
+    """
+
+    Base.metadata.create_all(bind=engine)
+    with engine.connect() as connection:
+        connection.execute(
+            "INSERT OR IGNORE INTO recipes (id, title, servings) VALUES ('rec-0000-0000-0000-000000000001', 'Beef & Sweet Potato Mash', 4)"
+        )
+        connection.execute(
+            "INSERT OR IGNORE INTO ingredients (recipe_id, name, scaled_weight_g) VALUES ('rec-0000-0000-0000-000000000001', 'Sweet Potato', 600.0)"
+        )
+
+    yield
+
+    Base.metadata.drop_all(bind=engine)
+
+
 
 def test_read_homepage():
     response = client.get("/")
