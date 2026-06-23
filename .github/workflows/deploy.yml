@@ -49,3 +49,9 @@ jobs:
         needs: build-and-test
         runs-on: ubuntu-latest
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+        steps:
+          - name: Pipeline Complete Notification
+            run: |
+                echo "Success! All unit tests passed, and code syntax is clean."
+                echo "The MealPrepApp engine is ready for deployment."
