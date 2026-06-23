@@ -52,21 +52,16 @@ def setup_database():
     yield
 
 def test_recipe_scaling_calculation():
-    """
-    Verifies that the core calculation engine scales ingredient metrics accurately.
-    """
-    # Base servings is 4. Requesting 4 servings means a 1.0x scale (600g).
     response = client.get("/recipe/rec-0000-0000-0000-000000000001?servings=4")
     
     assert response.status_code == 200
     data = response.json()
     
+    print("TARGET API INGREDIENT STRUCUTRE:", data)
+    
     assert data["title"] == "Beef & Sweet Potato Mash"
     assert "ingredients" in data
     
     sweet_potato = data["ingredients"][0]
-    
-    # 🟢 Update the key inside the brackets to match your API response schema output
-    # (e.g., "weight_in_grams", "amount", or "scaled_weight_g")
-    assert sweet_potato["weight_in_grams"] == 600.0
+    assert sweet_potato["scaled_weight_grams"] == 600.0
     
