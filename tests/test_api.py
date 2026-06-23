@@ -57,8 +57,6 @@ def test_recipe_scaling_calculation():
     assert response.status_code == 200
     data = response.json()
     
-    print("TARGET API INGREDIENT STRUCUTRE:", data)
-    
     assert data["title"] == "Beef & Sweet Potato Mash"
     assert "ingredients" in data
     
