@@ -24,7 +24,7 @@ def setup_database():
         ('rec-0000-0000-0000-000000000001', 'Beef & Sweet Potato Mash', 4)
     )
     cursor.execute(
-        "INSERT OR IGNORE INTO ingredients (ingredient_id, name, scaled_weight_g) VALUES (?, ?, ?)",
+        "INSERT OR IGNORE INTO ingredients (ingredient_id, name, display_unit) VALUES (?, ?, ?)",
         ('rec-0000-0000-0000-000000000001', 'Sweet Potato', 600.0)
     )
     
